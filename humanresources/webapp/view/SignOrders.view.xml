@@ -1,0 +1,11 @@
+<mvc:View controllerName="rrhh.humanresources.controller.MainHR" 
+			xmlns:mvc="sap.ui.core.mvc" 
+			displayBlock="true" 
+			xmlns="sap.m">
+
+    <Page id="page" title="{i18n>title}">
+        <content>
+           <Text text="SIGN_ORDERS"/>
+        </content>
+    </Page>
+</mvc:View>

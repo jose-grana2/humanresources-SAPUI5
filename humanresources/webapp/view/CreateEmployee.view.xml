@@ -1,0 +1,123 @@
+<mvc:View 
+        controllerName="rrhh.humanresources.controller.CreateEmployee" 
+        xmlns:mvc="sap.ui.core.mvc" 
+        xmlns:core="sap.ui.core" 
+        xmlns:form="sap.ui.layout.form"
+        displayBlock="true" 
+        xmlns:upload="sap.m.upload"
+        xmlns="sap.m">
+
+    <NavContainer id="wizardNavContainer">
+        <pages>
+            <Page showHeader="true">
+                <content>
+                    <Wizard id="wizardEmployee" complete="onCompleteWizard">
+                    <!-- First Step -->
+                        <WizardStep id="TypeEmployeeStep"
+                                    title="{i18n>typeEmployee}"
+                                    validated="false">
+                            <MessageStrip class="sapUiSmallMarginBottom"
+                                        text="{i18n>dialogTypeEmployee}"  
+                                        showIcon="true"/>
+                            <FlexBox alignItems="Center" justifyContent="Center">
+                                <Button id="btnEmployeeTypeInternal" text="{i18n>internal}" press="onTypeEmployee" class="sapUiSmallMarginEnd">
+                                    <customData>
+                                        <core:CustomData key="TypeEmployee" value="0"></core:CustomData>
+                                    </customData>
+                                </Button>
+                                <Button id="btnEmployeeTypeExternal" text="{i18n>selfEmployed}" press="onTypeEmployee" class="sapUiSmallMarginEnd">
+                                    <customData>
+                                        <core:CustomData key="TypeEmployee" value="1"></core:CustomData>
+                                    </customData>
+                                </Button>
+                                <Button id="btnEmployeeTypeManager" text="{i18n>manager}" press="onTypeEmployee" class="sapUiSmallMarginEnd">
+                                    <customData>
+                                        <core:CustomData key="TypeEmployee" value="2"></core:CustomData>
+                                    </customData>
+                                </Button>
+                            </FlexBox>
+                        </WizardStep>
+                    <!-- Second Step -->
+                        <WizardStep id="EmployeeData"
+                                    title="{i18n>employeeData}"
+                                    validated="false">
+                            <MessageStrip class="sapUiSmallMarginBottom"
+                                        text="{i18n>dialogEmployeeData}"
+                                        showIcon="true"/>
+                            <form:SimpleForm editable="true">
+                                <Label width="100%" text="{i18n>name}" required="true"/>
+                                <Input width="100%" id="nameEmployee"
+                                    valueState="{EmployeeModel>/FirstNameState}"
+                                    change="onValidateDataEmployee"
+                                    placeholder="Introduce un valor mayor a 6 caracteres" value="{EmployeeModel>/FirstName}"/>
+                                <Label width="100%" text="{i18n>surname}" required="true"/>
+                                <Input width="100%" id="surnameEmployee" 
+                                      valueState="{EmployeeModel>/LastNameState}"
+                                      change="onValidateDataEmployee"
+                                      placeholder="Introduce un valor mayor a 6 caracteres" value="{EmployeeModel>/LastName}"/>
+
+                                <Label width="100%" visible='{= ${EmployeeModel>/TypeEmployee} === "0" ? true : ${EmployeeModel>/TypeEmployee} === "2"  ? true : false}'
+                                        text="{i18n>dni}" required="true"/>
+                                <Input id="DNIEmployee" visible='{= ${EmployeeModel>/TypeEmployee} === "0" ? true : ${EmployeeModel>/TypeEmployee} === "2"  ? true : false}'
+                                    width="100%" placeholder="Debe introducir 9 caracteres" change="onValidatorDNI" value="{EmployeeModel>/Dni}"  valueState="{EmployeeModel>/DniStatus}"/> 
+
+                                <Label width="100%" text="{i18n>cif}" visible='{= ${EmployeeModel>/TypeEmployee} === "1" ? true : false}'
+                                required="true"/> 
+                                <Input id="CIFEmployee" width="100%" visible='{= ${EmployeeModel>/TypeEmployee} === "1" ? true : false}'
+                                    placeholder="Debe introducir 9 caracteres" change="onValidateDataEmployee" value="{EmployeeModel>/Dni}" valueState="{EmployeeModel>/CifStatus}"/> 
+
+                                <Label width="100%" text="{= ${EmployeeModel>/TypeEmployee} === '1' ? ${i18n>dailyPrice} : ${i18n>grossAnnualSalary}}" required="true"/> 
+                                <Slider id="Salary"  min="{EmployeeModel>/SalaryMin}" max="{EmployeeModel>/SalaryMax}" value="{EmployeeModel>/SalaryDefault}" 
+                                showAdvancedTooltip = "true" enableTickmarks="true" progress="false" class="sapUiSmallMarginBottom"/>
+
+                                <Label width="100%" text="{i18n>dateJoining}"></Label>
+                                <DatePicker id="dateJoining" change="onValidateDataEmployee" 
+                                            dateValue="{EmployeeModel>/CreationDate}" valueState="{EmployeeModel>/DateState}" calendarWeekNumbering="MiddleEastern"
+                                            class="sapUiSmallMarginBottom"/>
+
+                            </form:SimpleForm>
+
+                        </WizardStep>
+                    <!-- Third Step -->
+                        <WizardStep id="additionalInformation"
+                                    complete="onCompleteWizard"
+                                    validated="true"
+                                    title="{i18n>additionalInformation}">
+                            <MessageStrip class="sapUiSmallMarginBottom"
+                                        text="{i18n>messageAddInformation}"
+                                        showIcon="true"/>
+                            <Label text="{i18n>comments}" width="100%"></Label>
+                            <TextArea value="{/Comments}" width="100%"></TextArea>
+                            <Panel headerText="{i18n>files}">
+                                    <content>
+                                        <upload:UploadSet id="uploadSetAttachments"
+                                                          maxFileNameLength="55"
+                                                          maxFileSize="10"
+                                                          uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments/"
+                                                          beforeUploadStarts="onFileBeforeUpload">
+                                        </upload:UploadSet>
+                                    </content>
+                                </Panel>
+                        </WizardStep>
+                    </Wizard>
+                </content>
+                <footer>
+                    <OverflowToolbar>
+                        <ToolbarSpacer/>
+                        <Button text="{i18n>cancel}" press="onCancel"/>
+                    </OverflowToolbar>
+                </footer>
+            </Page>
+            <Page id="ReviewPage" title="{i18n>ReviewData}">
+                <core:Fragment fragmentName="rrhh.humanresources.fragment.ReviewPage" type="XML"/>
+                <footer>
+                    <Toolbar>
+                        <ToolbarSpacer></ToolbarSpacer>
+                        <Button text="{i18n>save}" press="onSaveEmployee"></Button>
+                        <Button text="{i18n>cancel}" press="onCancel"></Button>
+                    </Toolbar>
+                </footer>
+            </Page>
+        </pages>
+    </NavContainer>
+</mvc:View>

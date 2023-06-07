@@ -1,0 +1,28 @@
+<mvc:View controllerName="rrhh.humanresources.controller.MainHR" 
+			xmlns:mvc="sap.ui.core.mvc" 
+			displayBlock="true" 
+			xmlns="sap.m">
+
+	<Page title="{i18n>title}">
+		<content>
+			<Panel expandable="true" expanded="true" headerText="{i18n>firstHeaderPanel}">
+				<GenericTile headerImage="sap-icon://add-employee" press="navigateToCreateEmployee">
+					<TileContent footer="{i18n>createEmployee}"/>
+				</GenericTile>
+				<GenericTile 
+							headerImage="sap-icon://employee-lookup"
+							press="navigateToSeeEmployee"
+				>
+					<TileContent footer="{i18n>seeEmployee}"/>
+
+				</GenericTile>
+			</Panel>
+			<Panel expandable="true" expanded="true" headerText="{i18n>secondHeaderPanel}">
+				 <GenericTile headerImage="sap-icon://add-employee" press="navigateToSignOrders">
+					<TileContent footer="{i18n>signOrders}"/>
+				</GenericTile>
+			</Panel>
+
+		</content>
+	</Page>
+</mvc:View>
