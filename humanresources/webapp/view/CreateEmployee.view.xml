@@ -92,7 +92,7 @@
                                     <content>
                                         <upload:UploadSet id="uploadSetAttachments"
                                                           instantUpload="false"
-                                                          uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments/"
+                                                          uploadUrl="/rrhhhumanresources/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments/"
                                                           uploadEnabled="true"
                                                           maxFileNameLength="55"
                                                           maxFileSize="10"

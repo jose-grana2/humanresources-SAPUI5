@@ -6,6 +6,11 @@
           xmlns:suite="sap.suite.ui.commons"
           displayBlock="true" >
 
+    <Page id="detailSelectEmployee" showHeader="false" visible="{ModelView>/select}">
+        <FlexBox alignItems="Center" justifyContent="Center" height="100%">
+            <Text text="{i18n>selectEmployee}"></Text>
+        </FlexBox>
+    </Page>
     <!-- <Page id="detailSelectEmployee" showHeader="false">
         <FlexBox alignItems="Center" justifyContent="Center" height="100%">
             <Text text="{i18n>selectEmployee}"></Text>
@@ -13,7 +18,8 @@
     </Page> -->
    <Page
         id="detailEmployee"
-        title="{i18n>detailEmployee}">
+        title="{i18n>detailEmployee}"
+        visible="{ModelView>/details}">
         <ObjectHeader
             icon= "{= ${employeeModel>Type}==='0' ? 'sap-icon://employee-pane' : ${employeeModel>Type}==='1' ? 'sap-icon://employee' : 'sap-icon://leads' }"
             title="{employeeModel>FirstName} {employeeModel>LastName}"
@@ -35,7 +41,7 @@
                         <upload:UploadSet id="uploadSet"
                                             maxFileNameLength="55"
                                             maxFileSize="10"
-                                            uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments/"
+                                            uploadUrl="/rrhhhumanresources/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments/"
                                             beforeUploadStarts="onFileBeforeUpload"
                                             uploadCompleted="onFileUploadComplete"
                                             afterItemRemoved="onFileDeleted"/>

@@ -5,7 +5,7 @@ sap.ui.define(
         "sap/ui/core/UIComponent",
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
-        
+        "sap/ui/model/json/JSONModel"
     ], 
 /**
  * 
@@ -13,15 +13,21 @@ sap.ui.define(
  * @param {sap.ui.core.UIComponent} UIComponent
  * @param {sap.ui.model.Filter} Filter
  * @param {sap.ui.model.FilterOperator} FilterOperator
+ * @param {sap.ui.model.json.JSONModel} JSONModel
  * 
  */
-    function (Controller, UIComponent, Filter, FilterOperator) {
+    function (Controller, UIComponent, Filter, FilterOperator, JSONModel) {
         'use strict';
         
         return Controller.extend('rrhh.humanresources.controller.SeeEmployees', {
             onInit: function () {
                 this._bus = sap.ui.getCore().getEventBus();
                 this._bus.subscribe("flexible", "showEmployee", this.showDetailEmployee, this);
+                let modelView = new JSONModel({
+                    select: true,
+                    details: false
+                });
+                this.getView().setModel(modelView, 'ModelView');
             },
             
             showDetailEmployee: function(category, eventName, path) {
@@ -31,10 +37,16 @@ sap.ui.define(
                 let oContext = detailsView.getBindingContext("employeeModel"),
                     sSapId = oContext.getProperty("SapId"),
                     sEmployeeId = oContext.getProperty("EmployeeId");
-
-                // let oUploadSet = detailsView.byId("uploadSet");
+                
+                let modelView = this.getView().getModel("ModelView");
+                
+                modelView.setData({
+                    select: false,
+                    details: true
+                })
+                modelView.refresh();
+                    
                 let oUploadSet = this.getView().byId("uploadSet");
-            
                 oUploadSet.bindAggregation("items", {
                     path: 'employeeModel>/Attachments',
                     filters: [
@@ -104,9 +116,12 @@ sap.ui.define(
                     title : this.getView().getModel("i18n").getResourceBundle().getText("confirm"),
                     onClose : function(oAction){
                             if(oAction === "OK"){
-                                //Se llama a la función remove
                                 this.getView().getModel("employeeModel").remove(this.getView().mObjectBindingInfos.employeeModel.path ,{
                                     success : function(data){
+                                        this.getView().getModel("ModelView").setData({
+                                            details:false, 
+                                            select:true
+                                        });
                                         sap.m.MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("userDeleted"));
                                     }.bind(this),
                                     error : function(e){
