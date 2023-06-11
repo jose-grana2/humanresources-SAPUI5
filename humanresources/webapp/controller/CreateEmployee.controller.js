@@ -7,7 +7,8 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/m/upload/UploadSetItem",
     "sap/ui/core/format/DateFormat",
-    "sap/ui/model/type/Date"
+    "sap/ui/model/type/Date",
+    "sap/ui/core/UIComponent",
 ], 
 /**
  * 
@@ -18,9 +19,11 @@ sap.ui.define([
  * @param {typeof sap.m.upload.UploadSetItem} UploadSetItem
  * @param {typeof sap.ui.core.format.DateFormat} DateFormat
  * @param {typeof sap.ui.model.type.Date} Date
+ * @param {typeof sap.ui.core.UIComponent} UIComponent
+ * 
  * 
  */
-function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateFormat, Date) {
+function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateFormat, Date, UIComponent) {
     'use strict';
    
     return Controller.extend("rrhh.humanresources.controller.CreateEmployee", {
@@ -30,17 +33,41 @@ function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateForm
             this._wizard = this.byId("wizardEmployee");
             this._modelEmployee  = new JSONModel({});
             this.getView().setModel(this._modelEmployee, 'EmployeeModel');
+            let visibleReviewOrWizard = {
+                "review": false,
+                "wizard": true
+            }
+            this.getView().setModel(visibleReviewOrWizard, 'VisibleReviewOrWizard');
             //reset the posibles steps created previously
-            var oFirstStep = this._wizard.getSteps()[0];
-            this._wizard.discardProgress(oFirstStep);
-           
+            let wizardStepEmployees = this._wizard.getSteps();
+            let wizardEmployee = this._wizard;
+            wizardStepEmployees.forEach(function (step) {
+                wizardEmployee.discardProgress(step);
+            });
+
             // scroll to top
-            this._wizard.goToStep(oFirstStep);
+            this._wizard.goToStep(wizardStepEmployees[0]);
             
             // invalidate first step
-            oFirstStep.setValidated(false);
+            wizardStepEmployees[0].setValidated(false);
         },
 
+        onCancel: function () {
+            let wizardEmployee = this.getView().byId("wizardEmployee"),
+                wizardStepEmployees = wizardEmployee.getSteps();
+
+            wizardStepEmployees.forEach(function (step) {
+                wizardEmployee.discardProgress(step);
+            });
+
+            wizardEmployee.goToStep(wizardStepEmployees[0]);
+            this.navigateToMainHR();
+        },
+
+        navigateToMainHR: function() {
+            const oRouter = new UIComponent.getRouterFor(this);
+            oRouter.navTo("RouteMainHR");
+        },
 
         onTypeEmployee: function (oEvent) {
             var typeButtonPressed = oEvent.getSource();
@@ -199,30 +226,21 @@ function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateForm
         },
 
         
-        onFileBeforeUpload: function (oEvent) {
+        onAfterItemAdded: function (oEvent) {
            
             let oItem = oEvent.getParameter("item"),
+                oUploadSet = this.getView().byId("uploadSetAttachments"),
                 oModel = this.getView().getModel("employeeModel"),
-                sFileName = oItem.getFileName(),
                 sSecurityToken = oModel.getSecurityToken();
-            
-            let sSlug = sFileName;
 
             //adding token 
             let oCustomerHeaderToken = new sap.ui.core.Item({
                 key:'X-CSRF-TOKEN',
                 text: sSecurityToken
             });
-            
-            // adding Slug
-            let oCustomerHeaderSlug = new sap.ui.core.Item({
-                key:'Slug',
-                text: sSlug
-            });
-
-            oItem.addHeaderField(oCustomerHeaderSlug);
             oItem.addHeaderField(oCustomerHeaderToken);
-
+            
+            oUploadSet.addItem(oItem);
         },
 
         editStep: function (step){
@@ -256,7 +274,8 @@ function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateForm
 
         onSaveEmployee: function (){
             let body = {},
-                oEmployeesModel = this._modelEmployee.getData();
+                oEmployeesModel = this._modelEmployee.getData(),
+                oThis = this;
             
             body.Type = oEmployeesModel.TypeEmployee;
             body.FirstName = oEmployeesModel.FirstName;
@@ -271,26 +290,22 @@ function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateForm
                 Waers : "EUR"
             }];
 
-            this.getView().setBusy(true);
-            this.getView().getModel("employeeModel").create("/Users",body,{
-                success : function(data){
+
+            this.getView().getModel("employeeModel").create("/Users",body, {
+                success : async function(data){
                     this.getView().setBusy(false);
-                    this.newUser = data.EmployeeId;
-                    this.amount = data.Amount;
-                    this.waers = data.Waers;
-                    this.date = data.CreationDate;
-                    this.sapId = data.SapId;
-                    this.comments = data.Comments;
-                    sap.m.MessageBox.information(this.oView.getModel("i18n").getResourceBundle().getText("newEmployee") + ": " + this.newUser,{
+                    
+                    let employeeId = await oThis.readEmployeeId(oThis);
+
+                    sap.m.MessageBox.information(this.oView.getModel("i18n").getResourceBundle().getText("newEmployee") + ": " + employeeId,{
                         onClose : function(){
-                            var wizardNavContainer = this.byId("wizardNavContainer");
-                            wizardNavContainer.back();
-                            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-                            oRouter.navTo("MainHR",{},true);
+                            this.wizardNavContainer
+                            this.onCancel();
                         }.bind(this)
                     });
-                    this.onSaveSalary(this.newUser, this.sapId, this.amount, this.date, this.waers, this.comments);
-                    this.onStartUpload();
+
+                    this.onSaveSalary(employeeId, data.SapId, data.Amount, data.CreationDate, data.Waers, data.Comments);
+                    this.onStartUpload(data.SapId, employeeId);
                 }.bind(this),
                 error : function(e){
                     this.getView().setBusy(false);
@@ -298,11 +313,38 @@ function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateForm
             });
         },
 
-        //
 
-        onStartUpload: function () {
-            let oUploadSet = this.getView().byId("uploadSetAttachments");
+        readEmployeeId: function (oThis) {
+            return new Promise(function(resolve, reject) {
+                oThis.getView().getModel("employeeModel").read('/Users', {
+                    filters: [
+                        new sap.ui.model.Filter("SapId", "EQ" , oThis.getOwnerComponent().SapId),
+                    ],
+                    success: function(data) {
+                        let lengthUsers = data.results.length;
+                        resolve(data.results[lengthUsers - 1].EmployeeId);
+                    },
+                    error: function(e) {
+    
+                    }
+                });
+            });
+        },
+
+        onStartUpload: function (sapId, employeeId) {
+           let oUploadSet = this.getView().byId("uploadSetAttachments");
             oUploadSet.getItems().forEach(function (oItem){
+                
+                let sFileName = oItem.getFileName(),
+                    sSlug = sapId + ";" + employeeId + ";" + sFileName;
+
+                //add slug
+                let oCustomerHeaderSlug = new sap.ui.core.Item({
+                    key: "Slug",
+                    text: sSlug
+                });
+                
+                oItem.addHeaderField(oCustomerHeaderSlug);
                 oUploadSet.uploadItem(oItem);
             });
         },

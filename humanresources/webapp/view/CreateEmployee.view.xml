@@ -91,10 +91,12 @@
                             <Panel headerText="{i18n>files}">
                                     <content>
                                         <upload:UploadSet id="uploadSetAttachments"
+                                                          instantUpload="false"
+                                                          uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments/"
+                                                          uploadEnabled="true"
                                                           maxFileNameLength="55"
                                                           maxFileSize="10"
-                                                          uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments/"
-                                                          beforeUploadStarts="onFileBeforeUpload">
+                                                          afterItemAdded="onAfterItemAdded">
                                         </upload:UploadSet>
                                     </content>
                                 </Panel>
