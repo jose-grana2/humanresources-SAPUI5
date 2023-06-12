@@ -11,11 +11,6 @@
             <Text text="{i18n>selectEmployee}"></Text>
         </FlexBox>
     </Page>
-    <!-- <Page id="detailSelectEmployee" showHeader="false">
-        <FlexBox alignItems="Center" justifyContent="Center" height="100%">
-            <Text text="{i18n>selectEmployee}"></Text>
-        </FlexBox>
-    </Page> -->
    <Page
         id="detailEmployee"
         title="{i18n>detailEmployee}"

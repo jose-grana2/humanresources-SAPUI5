@@ -60,6 +60,4 @@
 				<Link press="editThirdStep" text="{i18n>edit}" />
 			</form:content>
 		</form:SimpleForm>
-		
-   
 </mvc:View>

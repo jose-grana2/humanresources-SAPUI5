@@ -167,7 +167,6 @@ function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateForm
                 isValid = false;
             } else {
                 oData.FirstNameState = "None";
-                // oData.FirstName = oView.byId("nameEmployee").getValue();
             }
 
             // check LastName 
@@ -176,7 +175,6 @@ function (Controller, JSONModel, Filter, FilterOperator, UploadSetItem, DateForm
                 isValid = false;
             } else {
                 oData.LastNameState = "None";
-                // oData.LastName = oView.byId("surnameEmployee").getValue();
             }
 
             // check Date 
